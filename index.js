@@ -111,6 +111,41 @@ app.get("/users/:username" , async (req , res) => {
 
 
 
+//POST ROUTES
+
+//Games
+
+app.post("/games" , async (req , res) => {
+
+    let game = new Game(req.body);
+    let savedGame = await game.save();
+
+        res.status(201).json(savedGame);
+});
+
+//Reviews
+
+app.post("/reviews" , async (req , res) => {
+
+    let review = new Reviews(req.body);
+    let savedReview = await review.save();
+
+        res.status(201).json(savedReview);
+});
+
+//Users
+
+app.post("/users" , async (req , res) => {
+
+    let user = new Users(req.body);
+    let savedUser = await user.save();
+
+        res.status(201).json(savedUser);
+});
+
+
+
+
 
 
 
