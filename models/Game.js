@@ -8,6 +8,7 @@ const gameSchema = new mongoose.Schema({
         trim: true ,
         maxlength: 100 ,
         minlength: 1 ,
+        lowercase: true ,
     },
 
     developer: {
