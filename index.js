@@ -1,5 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose';
+
+import Games from "./models/Game.js"
+import Reviews from "./models/Review.js"
+import Users from "./models/User.js"
+
 import "dotenv/config"
 
 
