@@ -54,7 +54,7 @@ app.get("/games/:title" , async ( req ,res) => {
     });
 
     if(!game) 
-        return res.status(404).json({message: "Game not Found"});
+        return res.status(404).json({message: "Game Not Found"});
     
     res.json(game);
 });
@@ -133,7 +133,7 @@ app.post("/reviews" , async (req , res) => {
     let review = new Reviews(req.body);
     let savedReview = await review.save();
 
-    await updateAverage(review.game);
+    await updateAverage(review.title);
 
         res.status(201).json(savedReview);
 });
@@ -149,6 +149,59 @@ app.post("/users" , async (req , res) => {
     delete userReturn.email;
 
         res.status(201).json(userReturn);
+});
+
+
+
+//PATCH ROUTES
+
+//Games
+
+app.patch("/games/:title" , async (req , res) => {
+
+    let game = await Games.findOne({title: req.params.title}).findOneAndUpdate(req.body , {
+        new: true ,
+    });
+
+    if(!game)
+        return res.status(404).json({message: "Game Not Found"});
+
+    res.json(game);
+});
+
+
+//Reviews
+
+app.patch("/reviews/:title" , async (req ,res) => {
+
+    let review = await Reviews.findOne({title: req.params.title}).findOneAndUpdate(req.body , {
+        new: true ,
+    });
+
+    if(!review)
+        return res.status(404).json({message: "Review Not Found"});
+
+    if(req.body.rating) {
+        await updateAverage(review.title)
+    }
+
+        res.json(review);
+})
+
+
+//Users
+
+app.patch("/users/:username" , async (req ,res) => {
+
+    let user = await Users.findOne({username: req.params.username}).findOneAndUpdate(req.body , {
+        new: true ,
+        select: "-email" ,
+    });
+
+    if(!user)
+        return res.status(404).json({message: "User Not Found"});
+
+    res.json(user);
 });
 
 
