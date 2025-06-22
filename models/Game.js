@@ -43,6 +43,12 @@ const gameSchema = new mongoose.Schema({
         max: [10 , "Rating can't be greater than 10"] ,
     },
 
+    reviewCount: {
+        type: Number ,
+        default: 0 ,
+    },
+
+   
     description: {
         type: String ,
         trim: true ,

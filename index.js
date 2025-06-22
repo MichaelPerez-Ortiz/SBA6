@@ -6,6 +6,7 @@ import Reviews from "./models/Review.js"
 import Users from "./models/User.js"
 
 import "dotenv/config"
+import Game from './models/Game.js';
 
 
 const app = express();
@@ -68,7 +69,7 @@ app.get("/reviews/:title" , async (req , res) => {
         if(sortBy === "rating") sort = {rating: -1};
         if(sortBy === "oldest") sort = {createdAt: 1};
 
-        let reviews = await Reviews.find({game: title})
+        let reviews = await Reviews.find({title: title})
 
         .sort(sort)
         .limit(parseInt(limit) || 5)
@@ -130,6 +131,8 @@ app.post("/reviews" , async (req , res) => {
     let review = new Reviews(req.body);
     let savedReview = await review.save();
 
+    await updateAverage(review.game);
+
         res.status(201).json(savedReview);
 });
 
@@ -140,7 +143,10 @@ app.post("/users" , async (req , res) => {
     let user = new Users(req.body);
     let savedUser = await user.save();
 
-        res.status(201).json(savedUser);
+    let userReturn = savedUser.toObject();
+    delete userReturn.email;
+
+        res.status(201).json(userReturn);
 });
 
 
@@ -148,7 +154,22 @@ app.post("/users" , async (req , res) => {
 
 
 
+//Average Score
 
+async function updateAverage(title) {
+    
+    let result = await Reviews.aggregate([
+            {$match: {game: title}} ,
+            {$group: {_id: null , averageRating: {$avg: "$rating"}}} ,
+    ]);
+
+   await Game.findOneAndUpdate(
+        {title: title} ,
+        {averageRating: result.length > 0 ? result[0].averageRating : 0 , $inc: {reviewCount: 1}} ,
+        {new: true}
+   );
+
+}
 
 
 
