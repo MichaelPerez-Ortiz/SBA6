@@ -206,6 +206,50 @@ app.patch("/users/:username" , async (req ,res) => {
 
 
 
+//DELETE ROUTES
+
+//Games
+
+app.delete("/games/:title" , async (req , res) => {
+
+    let game = await Games.findOneAndDelete(req.params.title);
+
+    if(!game)
+        return res.status(404).json({message: "Game Not Found"});
+
+    res.json({message: "Game Deleted"});
+});
+
+
+//Reviews
+
+app.delete("/reviews/:title" , async (req , res) => {
+
+    let review = await Reviews.findOneAndDelete(req.params.title);
+
+    if(!review)
+        return res.status(404).json({message: "Review Not Found"});
+
+    await updateAverage(review.title);
+
+        res.json({message: "Review Deleted"});
+});
+
+
+//Users
+
+app.delete("/users/:username" , async (req , res) => {
+
+    let user = await Users.findOneAndDelete(req.params.username);
+
+    if(!user)
+        return res.status(404).json({message: "Username Not Found"});
+    
+    res.json({message: "User Deleted"});
+});
+
+
+
 
 
 
