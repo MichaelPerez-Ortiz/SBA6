@@ -49,7 +49,9 @@ app.get("/games" , async (req , res) => {
 app.get("/games/:title" , async ( req ,res) => {
     
     let title = req.params.title.trim();
-    let game = await Games.findOne({title: title});
+    let game = await Games.findOne({title: {$regex: title , $options: "i"}
+    
+    });
 
     if(!game) 
         return res.status(404).json({message: "Game not Found"});
@@ -69,7 +71,7 @@ app.get("/reviews/:title" , async (req , res) => {
         if(sortBy === "rating") sort = {rating: -1};
         if(sortBy === "oldest") sort = {createdAt: 1};
 
-        let reviews = await Reviews.find({title: title})
+        let reviews = await Reviews.find({game: {$regex: req.params.title , $options: "i"}})
 
         .sort(sort)
         .limit(parseInt(limit) || 5)
@@ -170,7 +172,6 @@ async function updateAverage(title) {
    );
 
 }
-
 
 
 

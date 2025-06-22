@@ -48,7 +48,6 @@ const gameSchema = new mongoose.Schema({
         default: 0 ,
     },
 
-   
     description: {
         type: String ,
         trim: true ,
