@@ -80,9 +80,9 @@ app.get("/reviews/:title" , async (req , res) => {
         res.json(reviews);
 });
 
-app.get("/reviews/:username" , async (req , res) => {
+app.get("/reviews/:id" , async (req , res) => {
 
-    let reviews = await Reviews.find({user: user.username})
+    let reviews = await Reviews.find({user: req.params.id})
 
         .sort({createdAt: -1})
         .populate("game" , "title coverImage");
@@ -100,10 +100,9 @@ app.get("/users" , async (req , res) => {
         res.json(user);
 });
 
-app.get("/users/:username" , async (req , res) => {
+app.get("/users/:id" , async (req , res) => {
 
-    let username =req.params.username;
-    let user = await Users.findOne({username: username}).select("-email");
+    let user = await Users.findOne({_id: req.params.id}).select("-email");
 
     if(!user)
         return res.status(404).json({message: "User Not Found"});
@@ -191,9 +190,9 @@ app.patch("/reviews/:title" , async (req ,res) => {
 
 //Users
 
-app.patch("/users/:username" , async (req ,res) => {
+app.patch("/users/:id" , async (req ,res) => {
 
-    let user = await Users.findOne({username: req.params.username}).findOneAndUpdate(req.body , {
+    let user = await Users.findOne({_id: req.params.id}).findOneAndUpdate(req.body , {
         new: true ,
         select: "-email" ,
     });
@@ -238,12 +237,12 @@ app.delete("/reviews/:title" , async (req , res) => {
 
 //Users
 
-app.delete("/users/:username" , async (req , res) => {
+app.delete("/users/:id" , async (req , res) => {
 
-    let user = await Users.findOneAndDelete(req.params.username);
+    let user = await Users.findOneAndDelete({_id: req.params.id});
 
     if(!user)
-        return res.status(404).json({message: "Username Not Found"});
+        return res.status(404).json({message: "User Not Found"});
     
     res.json({message: "User Deleted"});
 });
