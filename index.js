@@ -74,7 +74,7 @@ app.get("/reviews/:game" , async (req , res) => {
 
     const {sortBy ,  limit} = req.query;
 
-    const trimmedSortBy = sortBy ? sortBy.trim() : undefined;
+    
 
     let sort = {createdAt: -1};
 
