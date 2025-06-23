@@ -12,7 +12,7 @@ import Game from './models/Game.js';
 const app = express();
 const PORT = process.env.PORT;
 
-await mongoose.connect(process.env.MONGODB_URL)
+await mongoose.connect(process.env.MONGODB_URI)
 
 app.use(express.json());
 
@@ -23,13 +23,13 @@ app.use(express.json());
 
 app.get("/games" , async (req , res) => {
 
-    const {title , genre , developer, platform, minRating, sortBy, limit} = req.query;
+    const { genre , developer, platform, minRating, sortBy, limit} = req.query;
     const query = {};
 
-        if(title) query.$text = {$search: title};
-        if(genre) query.genre = {$in: Array.isArray(genre) ? genre: [genre]};
-        if(developer) query.developer = developer;
-        if(platform) query.platform = {$in: Array.isArray(platform) ? platform: [platform]};
+       
+        if(genre) query.genre = {$regex: genre , $options: "i"};
+        if(developer) query.developer = {$regex: developer , $options: "i"};
+        if(platform) query.platform = {$regex: platform , $options: "i"};
         if(minRating) query.averageRating = {$gte: parseFloat(minRating)};
     
     let sort = {createdAt: -1};
@@ -49,7 +49,7 @@ app.get("/games" , async (req , res) => {
 app.get("/games/:title" , async ( req ,res) => {
     
     let title = req.params.title.trim();
-    let game = await Games.findOne({title: {$regex: title , $options: "i"}
+    let game = await Games.find({title: {$regex: title , $options: "i"}
     
     });
 
@@ -62,25 +62,43 @@ app.get("/games/:title" , async ( req ,res) => {
 
 //Reviews
 
-app.get("/reviews/:title" , async (req , res) => {
+
+app.get("/reviews" , async (req , res) => {
+
+    let reviews = await Reviews.find().populate("user" , "username avatar").populate("game" , "title coverImage");
+
+    res.json(reviews);
+});
+
+app.get("/reviews/:game" , async (req , res) => {
 
     const {sortBy ,  limit} = req.query;
+
+    const trimmedSortBy = sortBy ? sortBy.trim() : undefined;
 
     let sort = {createdAt: -1};
 
         if(sortBy === "rating") sort = {rating: -1};
         if(sortBy === "oldest") sort = {createdAt: 1};
 
-        let reviews = await Reviews.find({game: {$regex: req.params.title , $options: "i"}})
+        let game = await Game.findOne({title: {$regex: req.params.game , $options: "i"}});
+
+        if(!game) 
+            return res.status(404).json({message: "Game Not Found"});
+
+        let gameId =game._id
+
+        let reviews = await Reviews.find({game: gameId})
 
         .sort(sort)
         .limit(parseInt(limit) || 5)
-        .populate("user" , "username avatar");
+        .populate("user" , "username avatar")
+        .populate({path: "game" , select: "title coverImage"});
 
         res.json(reviews);
 });
 
-app.get("/reviews/:id" , async (req , res) => {
+app.get("/reviews/users/:id" , async (req , res) => {
 
     let reviews = await Reviews.find({user: req.params.id})
 
@@ -132,7 +150,7 @@ app.post("/reviews" , async (req , res) => {
     let review = new Reviews(req.body);
     let savedReview = await review.save();
 
-    await updateAverage(review.title);
+    await updateAverage(review.game);
 
         res.status(201).json(savedReview);
 });
@@ -156,14 +174,18 @@ app.post("/users" , async (req , res) => {
 
 //Games
 
-app.patch("/games/:title" , async (req , res) => {
+app.patch("/games/:id" , async (req , res) => {
+    let gameId = req.params.id;
 
-    let game = await Games.findOne({title: req.params.title}).findOneAndUpdate(req.body , {
-        new: true ,
-    });
+    let game = await Games.findOne({_id: gameId});
 
     if(!game)
         return res.status(404).json({message: "Game Not Found"});
+
+    let updateData = {...req.body};
+    delete updateData._id;
+
+    game = await Games.findByIdAndUpdate(gameId , updateData , {new: true}); 
 
     res.json(game);
 });
@@ -171,18 +193,20 @@ app.patch("/games/:title" , async (req , res) => {
 
 //Reviews
 
-app.patch("/reviews/:title" , async (req ,res) => {
+app.patch("/reviews/:id" , async (req ,res) => {
+     let reviewId = req.params.id;
 
-    let review = await Reviews.findOne({title: req.params.title}).findOneAndUpdate(req.body , {
-        new: true ,
-    });
+    let review = await Reviews.findOne({_id: reviewId});
 
     if(!review)
         return res.status(404).json({message: "Review Not Found"});
 
-    if(req.body.rating) {
-        await updateAverage(review.title)
-    }
+    let updateData = {...req.body};
+    delete updateData._id;
+
+    review = await Reviews.findByIdAndUpdate(reviewId , updateData ,  {new: true});
+
+
 
         res.json(review);
 })
@@ -192,13 +216,15 @@ app.patch("/reviews/:title" , async (req ,res) => {
 
 app.patch("/users/:id" , async (req ,res) => {
 
-    let user = await Users.findOne({_id: req.params.id}).findOneAndUpdate(req.body , {
-        new: true ,
-        select: "-email" ,
-    });
-
+    let user = await Users.findOne({_id: req.params.id});
+      
     if(!user)
         return res.status(404).json({message: "User Not Found"});
+
+    let updateData = {...req.body};
+    delete updateData._id;
+
+    user = await Users.findByIdAndUpdate(req.params.id , updateData , {new: true , select: "-email"});
 
     res.json(user);
 });
@@ -209,9 +235,10 @@ app.patch("/users/:id" , async (req ,res) => {
 
 //Games
 
-app.delete("/games/:title" , async (req , res) => {
+app.delete("/games/:id" , async (req , res) => {
+    let gameId = req.params.id;
 
-    let game = await Games.findOneAndDelete(req.params.title);
+    let game = await Games.findOneAndDelete({_id: gameId});
 
     if(!game)
         return res.status(404).json({message: "Game Not Found"});
@@ -222,14 +249,15 @@ app.delete("/games/:title" , async (req , res) => {
 
 //Reviews
 
-app.delete("/reviews/:title" , async (req , res) => {
+app.delete("/reviews/:id" , async (req , res) => {
+    let reviewId = req.params.id;
 
-    let review = await Reviews.findOneAndDelete(req.params.title);
+    let review = await Reviews.findOneAndDelete({_id: reviewId});
 
     if(!review)
         return res.status(404).json({message: "Review Not Found"});
 
-    await updateAverage(review.title);
+    await updateAverage(review.game);
 
         res.json({message: "Review Deleted"});
 });
@@ -254,16 +282,18 @@ app.delete("/users/:id" , async (req , res) => {
 
 //Average Score
 
-async function updateAverage(title) {
+async function updateAverage(gameId) {
     
     let result = await Reviews.aggregate([
-            {$match: {game: title}} ,
+            {$match: {game: gameId}} ,
             {$group: {_id: null , averageRating: {$avg: "$rating"}}} ,
     ]);
 
+    let reviewCount = await Reviews.countDocuments({game: gameId});
+
    await Game.findOneAndUpdate(
-        {title: title} ,
-        {averageRating: result.length > 0 ? result[0].averageRating : 0 , $inc: {reviewCount: 1}} ,
+        {_id: gameId} ,
+        {averageRating: result.length > 0 ? result[0].averageRating : 0 , reviewCount: reviewCount} ,
         {new: true}
    );
 
