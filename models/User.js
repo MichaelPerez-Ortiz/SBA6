@@ -21,6 +21,14 @@ const userSchema = new mongoose.Schema({
         match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/ , "Valid email address required"] ,
     },
 
+    password: {
+        type: String,
+        validate: {
+        validator: (v) => /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(v),
+            message: "Password must contain 8+ chars, uppercase, lowercase, and a number",
+        },
+    },
+
     role: {
         type: String ,
         enum: ["user" , "admin" , "moderator"] ,
