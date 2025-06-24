@@ -75,3 +75,47 @@
 - /reviews/:id
 
 - /users/:id
+
+
+
+**POST Request Templates**
+
+*games*
+
+{
+  "title": "" ,
+  "developer": "" ,
+  "releaseDate": "" ,
+  "genre": "" ,
+  "platform": "" ,
+  "description": "" ,
+  "coverImage": ""
+}
+
+Required = title & platform
+
+
+*reviews*
+
+{
+  "game": "",
+  "user": "" ,
+  "rating": "" ,
+  "review": ""
+}
+
+Required = All 
+*Need to use the user _id. This was to account for username changes.
+
+
+*users*
+
+{
+  "username": "",
+  "email": "" ,
+  "password": "" ,
+  "role": "",
+  "avatar": ""
+}
+
+Required = username , email & password
