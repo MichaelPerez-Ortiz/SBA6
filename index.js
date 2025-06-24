@@ -189,7 +189,19 @@ try {
 app.post("/reviews" , async (req , res) => {
 try {
 
-    let review = new Reviews(req.body);
+    let game = await Game.findOne({
+      title: { $regex: new RegExp(req.body.game , "i")}});
+
+      if (!game) {
+      return res.status(404).json({ message: "Game Not Found" });
+    }
+
+    let gameReview = {
+        ...req.body ,
+        game: game._id
+    }
+
+    let review = new Reviews(gameReview);
     let savedReview = await review.save();
 
     await updateAverage(review.game);

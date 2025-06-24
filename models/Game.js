@@ -18,6 +18,7 @@ const gameSchema = new mongoose.Schema({
     },
     releaseDate: {
         type: Date ,
+        get: (date) => date ? date.toISOString().split('T')[0] : null
     },
 
     genre: {
@@ -40,6 +41,7 @@ const gameSchema = new mongoose.Schema({
         type: Number ,
         min: [1 , "Rating can't be less than 1"] ,
         max: [10 , "Rating can't be greater than 10"] ,
+        default: null ,
     },
 
     reviewCount: {
@@ -57,8 +59,11 @@ const gameSchema = new mongoose.Schema({
         type: String ,
         default: "" ,
     },
-},
-{timestamps:true});
+},{ 
+  timestamps: true ,
+  toJSON: { getters: true } ,
+  toObject: { getters: true }
+});
 
 //Indexes
 

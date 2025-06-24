@@ -39,7 +39,7 @@
 **Users**
 
 -/users
-- Returns all users (without email addresses)
+- Returns all users (without email addresses or passwords)
 
 - /users/:id
 
@@ -75,46 +75,3 @@
 - /reviews/:id
 
 - /users/:id
-
-
-
-**POST Request Templates**
-
-*games*
-
-{
-  "title": "" ,
-  "developer": "" ,
-  "releaseDate": "" ,
-  "genre": "" ,
-  "platform": "" ,
-  "description": "" ,
-  "coverImage": ""
-}
-
-Required = title & platform
-
-
-*reviews*
-
-{
-  "game": "",
-  "user": "" ,
-  "rating": "" ,
-  "review": ""
-}
-
-Required = All
-
-
-*users*
-
-{
-  "username": "",
-  "email": "" ,
-  "password": "" ,
-  "role": "",
-  "avatar": ""
-}
-
-Required = username , email & password
