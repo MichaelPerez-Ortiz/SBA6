@@ -140,7 +140,7 @@ try {
 app.get("/users" , async (req , res) => {
 try {
 
-    let user = await Users.find().select("-email");
+    let user = await Users.find().select("-email -password");
 
         res.json(user);
 } catch (error) {
@@ -152,7 +152,7 @@ try {
 app.get("/users/:id" , async (req , res) => {
 try {
 
-    let user = await Users.findOne({_id: req.params.id}).select("-email");
+    let user = await Users.findOne({_id: req.params.id}).select("-email -password");
 
     if(!user)
         return res.status(404).json({message: "User Not Found"});
