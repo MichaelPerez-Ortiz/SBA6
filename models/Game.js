@@ -38,7 +38,6 @@ const gameSchema = new mongoose.Schema({
 
     averageRating: {
         type: Number ,
-        required: true , 
         min: [1 , "Rating can't be less than 1"] ,
         max: [10 , "Rating can't be greater than 10"] ,
     },
