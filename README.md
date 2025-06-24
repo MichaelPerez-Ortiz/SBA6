@@ -13,8 +13,8 @@
 - /games?developer=
 - /games?platform= 
 - /games?minRating=
-- /games?sortBy=: Sort by rating, release or title
-- &limit=
+- /games?sortBy=:  rating / release / title(Shows games in Alphabetical Order)
+-  limit=
 
 
 - /games/:title
@@ -29,8 +29,8 @@
 - /reviews/:game
 - Searches by Game title 
 
-- reviews?sortBy=: Sort by rating or oldest entry date
--&limit=
+- reviews/:game?sortBy=: rating / oldest
+-  limit=
 
 - /reviews/users/:id
 - Returns reviews by a specific user
@@ -38,8 +38,10 @@
 
 **Users**
 
--/users
-- Returns all users (without email addresses or passwords)
+- /users
+- users?role=: user / admin /moderator
+- users?sortBy=: oldest
+-  limit=
 
 - /users/:id
 

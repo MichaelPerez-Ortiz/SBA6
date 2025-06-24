@@ -43,7 +43,7 @@ try {
     let games = await Games.find(query)
 
         .sort(sort)
-        .limit(parseInt(limit)|| 5);
+        .limit(parseInt(limit)|| 0);
 
         res.json(games);
 } catch (error) {
@@ -77,7 +77,7 @@ try {
 app.get("/reviews" , async (req , res) => {
 try {
 
-    let reviews = await Reviews.find().populate("user" , "username avatar").populate("game" , "title coverImage");
+    let reviews = await Reviews.find().sort({ createdAt: -1 }).populate("user" , "username avatar").populate("game" , "title coverImage");
 
     res.json(reviews);
 } catch (error) {
@@ -108,7 +108,7 @@ try {
         let reviews = await Reviews.find({game: gameId})
 
         .sort(sort)
-        .limit(parseInt(limit) || 5)
+        .limit(parseInt(limit) || 0)
         .populate("user" , "username avatar")
         .populate({path: "game" , select: "title coverImage"});
 
@@ -139,8 +139,25 @@ try {
 
 app.get("/users" , async (req , res) => {
 try {
+    
+    const {role , sortBy ,limit} = req.query;
+    const query = {}
 
-    let user = await Users.find().select("-email -password");
+    if(role) {
+        const roles = ["user" , "admin" , "moderator"];
+
+        if(!roles.includes(role)) {
+            return res.status(400).json({message: "Role Does Not Exist"});
+        }
+
+        query.role = role;
+    }
+
+    let sort = {createdAt: -1};
+
+        if(sortBy === "oldest") sort = {createdAt: 1};
+
+    let user = await Users.find(query).select("-email -password").sort(sort).limit(parseInt(limit) || 0);
 
         res.json(user);
 } catch (error) {
